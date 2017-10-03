@@ -1,7 +1,7 @@
 Blinky Skynet Example
 ===============
 
-This code is the modification of the Blinky samle from [Azure GitHub](https://developer.microsoft.com/en-us/windows/iot/samples/helloblinky)) to work with Cognitive Services - Language Understanding Intelligent Service (LUIS) without a NuGet package.
+This code is the modification of the Blinky sample from [Azure GitHub](https://developer.microsoft.com/en-us/windows/iot/samples/helloblinky)) to work with Cognitive Services - Language Understanding Intelligent Service (LUIS) without a NuGet package.
 
 Futhermore we change the project to work with two LED lights (instead of only one). 
 
