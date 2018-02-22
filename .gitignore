@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+/SkyNetCommander/obj
+/SkyNetCommander/bin/ARM/Debug
+/SkyNetCommander/.vs/Blinky/v15
