@@ -28,13 +28,19 @@ Connect the other end of the resistor to one of the 3.3V pins on the Raspberry P
 
 Note that the polarity of the LED is important. (This configuration is commonly known as Active Low)
 
-Type a command into the text box and click the button "GO". Be sure to be connected so the Raspberry Pi can connect to the LUIS Rest API.
+You also must have a USB camera connected to your Raspberry Pi.
+
+Type a command into the text box and click the button "GO". The picture will be taken from the camera and the faces in the picture will be identified. The name of
+
+Be sure to be connected so the Raspberry Pi can connect to the Face API and LUIS Rest API.
 
 ##Source Code
 
-Download the code and change property LuisUrl inside the class WebClientAccess.cs for you LUIS query URL
+Download the code and change property LuisUrl inside the class WebClientAccess.cs for you LUIS query URL and the Face API key.
+Change the property **AuthorizedPeople** in the file MainPage.xaml.cs to set up which person has access to the corresponding lights.
 
 ## Additional resources
 * [Windows 10 IoT Core home page](https://developer.microsoft.com/en-us/windows/iot/)
 * [Congnitive Services - LUIS](https://docs.microsoft.com/en-us/azure/cognitive-services/luis/home)
+* [Face API Documentation](https://docs.microsoft.com/en-us/azure/cognitive-services/face/overview)
 
