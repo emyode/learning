@@ -1,8 +1,19 @@
 ﻿using Skynet.WebClient;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.Devices.Gpio;
+using Windows.Media.Capture;
+using Windows.Storage;
+using Windows.Media.MediaProperties;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.ProjectOxford.Face;
+using Microsoft.ProjectOxford.Face.Contract;
+using System.IO;
+using Windows.Foundation;
+
 namespace Blinky
 {
     public sealed partial class MainPage : Page
@@ -11,6 +22,17 @@ namespace Blinky
         private const int LED_YELLOW_PIN = 6;
         private GpioPin pinGreen;
         private GpioPin pinYellow;
+        private MediaCapture medCapture = new MediaCapture();
+        private bool isCameraInitialized = false;
+
+        //Hard-coded authorization
+        //Eduardo -> has authority on the Green led
+        //Marc -> has authority on the Yellow led
+        private IDictionary<Entity, string> AuthorizedPeople = new Dictionary<Entity, string>
+        {
+            { Entity.Green, "Eduardo" },
+            { Entity.Yellow, "Marc" },
+        };
 
         public MainPage()
         {
@@ -28,32 +50,48 @@ namespace Blinky
             pinYellow.SetDriveMode(GpioPinDriveMode.Output);
         }
 
-        private GpioPin[] GetPins(Entity entity)
+        private GpioPin[] GetAuthorizedPins(Entity entity, IList<string> authorizedPeople)
         {
-            GpioPin[] result = new GpioPin[] { };
+            var result = new List<GpioPin>();
             switch (entity)
             {
                 case Entity.Green:
-                    result = new GpioPin[] { pinGreen };
+                    CheckAccessForLight(result, authorizedPeople, entity, pinGreen);
                     break;
                 case Entity.Yellow:
-                    result = new GpioPin[] { pinYellow };
+                    CheckAccessForLight(result, authorizedPeople, entity, pinYellow);
                     break;
                 case Entity.All:
-                    result = new GpioPin[] { pinGreen, pinYellow };
+                    CheckAccessForLight(result, authorizedPeople, Entity.Green, pinGreen);
+                    CheckAccessForLight(result, authorizedPeople, Entity.Yellow, pinYellow);
                     break;
                 default:
                     break;
             }
 
-            return result;
+            return result.ToArray();
+        }
+
+        private void CheckAccessForLight(IList<GpioPin> pinList, IList<string> identifiedPeople, Entity light, GpioPin pin)
+        {
+            if (identifiedPeople.Contains(AuthorizedPeople[light]))
+            {
+                pinList.Add(pin);
+            }
+            else
+            {
+                MessagesTextBox.Text += $"Permission denied for {light} light\n";
+            }
         }
 
         private async void GO_Click(object sender, RoutedEventArgs e)
         {
+            //take a picture of the person giving the order
+            var peopleIdentified = await TakePictureAndIdentifyAsync();
+
             var result = await WebClientAccess.Order(CommandTextBox.Text);
 
-            var pins = GetPins(result.Entity);
+            var pins = GetAuthorizedPins(result.Entity, peopleIdentified);
             foreach (var pin in pins)
             {
                 switch (result.Intent)
@@ -72,6 +110,42 @@ namespace Blinky
 
             CommandTextBox.Text = "";
             CommandTextBox.Focus(FocusState.Keyboard);
+        }
+
+        private async Task<IList<string>> TakePictureAndIdentifyAsync()
+        {
+            IList<string> peopleIdentified = new List<string>();
+            if (!isCameraInitialized)
+            {
+                await medCapture.InitializeAsync();
+                isCameraInitialized = true;
+            }
+
+            var imgFmt = ImageEncodingProperties.CreateJpeg();
+            var bmImage = new BitmapImage();
+            var fileName = Guid.NewGuid().ToString() + ".jpg";
+            var collisionOption = CreationCollisionOption.GenerateUniqueName;
+            StorageFile file = await ApplicationData.Current.TemporaryFolder.CreateFileAsync(fileName, collisionOption);
+
+            // captures and stores image file
+            MessagesTextBox.Text = $"Taking picture\n";
+            await medCapture.CapturePhotoToStorageFileAsync(imgFmt, file);
+            using (var strm = await file.OpenReadAsync())
+            {
+                //start with clean list
+                await bmImage.SetSourceAsync(strm);
+                image.Source = bmImage;
+                image.HorizontalAlignment = HorizontalAlignment.Center;
+
+                strm.Seek(0);
+                MessagesTextBox.Text = $"Sending pictue for detection\n";
+                peopleIdentified = await WebClientAccess.GetPeopleAsync(strm.AsStreamForRead());
+            }
+
+            //delete image file
+            await file.DeleteAsync();
+
+            return peopleIdentified;
         }
     }
 }

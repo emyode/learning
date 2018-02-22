@@ -11,6 +11,11 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBox x:Name="CommandTextBox" />
             <Button x:Name="GO" Content="GO" Click="GO_Click" />
+            <Image x:Name="image" HorizontalAlignment="Center" Height="231" Margin="292,10,0,0" VerticalAlignment="Bottom" Width="450"/>
+            <ScrollViewer x:Name="MessageScroll">
+                <TextBlock Height="100" x:Name="MessagesTextBlock" />
+            </ScrollViewer>
+            <TextBox x:Name="MessagesTextBox" Height="100" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollMode="Enabled" AcceptsReturn="True" />
         </StackPanel>
     </Grid>
 </Page>
