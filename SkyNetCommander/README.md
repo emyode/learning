@@ -34,7 +34,7 @@ Type a command into the text box and click the button "GO". The picture will be 
 
 Be sure to be connected so the Raspberry Pi can connect to the Face API and LUIS Rest API.
 
-##Source Code
+## Source Code
 
 Download the code and change property LuisUrl inside the class WebClientAccess.cs for you LUIS query URL and the Face API key.
 Change the property **AuthorizedPeople** in the file MainPage.xaml.cs to set up which person has access to the corresponding lights.
